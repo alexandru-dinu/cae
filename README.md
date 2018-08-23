@@ -14,8 +14,9 @@ Before I get the chance to better document the code, here is a short description
  - `conv_refl_pad_bin` - same as above, only that reflection pad is used (as opposed to zero pad)
  - `conv_512_bin` - latent size is `16x16x16` bits/patch (i.e. compressed size: 30KB)
 
-
 [1] https://arxiv.org/abs/1703.00395
+
+The documentation and further work will be written in the repo's [wiki](https://github.com/alexandru-dinu/cae/wiki).
 
 ## results
 
