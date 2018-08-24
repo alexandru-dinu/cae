@@ -1,13 +1,12 @@
-from PIL import Image
-import numpy as np
 import argparse
-import matplotlib.pyplot as plt
+
+import numpy as np
+from PIL import Image
 from skimage.io import imsave
 
 
 def lin_interp(n, p1, p2):
-	# p1,p2 = 128,3
-	x = np.zeros((n, 128, 3))
+	x = np.zeros((n, p1.shape[0], 128, 3))
 
 	for i in range(n):
 		a = (i + 1) / (n + 1)
@@ -28,22 +27,20 @@ def smooth(in_img, ws, out_img):
 	h = ws // 2
 
 	for i in range(5):
-		for j in range(10):
-			p1 = patches[i, j][128 - h, :, :]
-			p2 = patches[i + 1][j, h, :, :]
+		p1 = patches[i, :, 128 - h, :, :]
+		p2 = patches[i + 1, :, h, :, :]
 
-			x = lin_interp(ws, p1, p2)
-			patches[i, j, 128 - h:, :, :] = x[:h, :, :]
-			patches[i + 1, j, :h, :, :] = x[h:, :, :]
+		x = lin_interp(ws, p1, p2)
+		patches[i, :, 128 - h:, :, :] = np.transpose(x[:h, :, :, :], (1, 0, 2, 3))
+		patches[i + 1, :, :h, :, :] = np.transpose(x[h:, :, :, :], (1, 0, 2, 3))
 
-	for i in range(6):
-		for j in range(9):
-			p3 = patches[i, j][:, 128 - h, :]
-			p4 = patches[i, j + 1][:, h, :]
+	for j in range(9):
+		p3 = patches[:, j, :, 128 - h, :]
+		p4 = patches[:, j + 1, :, h, :]
 
-			x = lin_interp(ws, p3, p4)
-			patches[i, j][:, 128 - h:, :] = np.transpose(x[:h, :, :], (1, 0, 2))
-			patches[i, j + 1][:, :h, :] = np.transpose(x[h:, :, :], (1, 0, 2))
+		x = lin_interp(ws, p3, p4)
+		patches[:, j, :, 128 - h:, :] = np.transpose(x[:h, :, :, :], (1, 2, 0, 3))
+		patches[:, j + 1, :, :h, :] = np.transpose(x[h:, :, :, :], (1, 2, 0, 3))
 
 	out = np.transpose(patches, (0, 2, 1, 3, 4))
 	out = np.reshape(out, (768, 1280, 3))
