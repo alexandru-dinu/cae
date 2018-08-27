@@ -42,7 +42,7 @@ def train(args):
 					y = model(x)
 					loss = mse_loss(y, x)
 
-					avg_loss += 0.6 * loss.item()
+					avg_loss += (1/60) * loss.item()
 
 					optimizer.zero_grad()
 					loss.backward()
