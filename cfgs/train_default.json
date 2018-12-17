@@ -1,0 +1,14 @@
+{
+  "num_epochs"   : 4,
+  "batch_size"   : 16,
+  "learning_rate": 0.00001,
+  "load"         : false,
+  "chkpt"        : null,
+  "resume_epoch" : 0,
+  "exp_name"     : "default",
+  "save_every"   : 500,
+  "out_every"    : 10,
+  "shuffle"      : false,
+  "dataset_path" : "../datasets/youtube_frames_720p_bigger",
+  "num_workers"  : 0
+}
