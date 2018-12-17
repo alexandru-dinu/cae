@@ -1,4 +1,5 @@
 import argparse
+import json
 import os
 
 import numpy as np
@@ -7,32 +8,38 @@ import torch.nn as nn
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
 
+import logger
 from image_folder import ImageFolder720p
-from models.model_ae_conv_32x32x32_bin import AutoencoderConv
+from models.model_ae_conv_32x32x32_zero_pad_bin import AutoencoderConv
 from utils import save_imgs
 
 
-def train(args):
-	model = AutoencoderConv().cuda()
-	if args.load:
-		model.load_state_dict(torch.load(args.chkpt))
-		print("Loaded model from", args.chkpt)
-	model.train()
-	print("Done setup model")
+def train(cfg):
+	os.makedirs(f"out/{cfg['exp_name']}", exist_ok=True)
+	os.makedirs(f"checkpoints/{cfg['exp_name']}", exist_ok=True)
 
-	dataset = ImageFolder720p(args.dataset_path)
+	model = AutoencoderConv().cuda()
+
+	if cfg['load']:
+		model.load_state_dict(torch.load(cfg['chkpt']))
+		logger.info("Loaded model from", cfg['chkpt'])
+
+	model.train()
+	logger.info("Done setup model")
+
+	dataset = ImageFolder720p(cfg['dataset_path'])
 	dataloader = DataLoader(
-		dataset, batch_size=args.batch_size, shuffle=args.shuffle, num_workers=args.num_workers
+		dataset, batch_size=cfg['batch_size'], shuffle=cfg['shuffle'], num_workers=cfg['num_workers']
 	)
-	print(f"Done setup dataloader: {len(dataloader)} batches of size {args.batch_size}")
+	logger.info(f"Done setup dataloader: {len(dataloader)} batches of size {cfg['batch_size']}")
 
 	mse_loss = nn.MSELoss()
-	adam = torch.optim.Adam(model.parameters(), lr=args.learning_rate, weight_decay=1e-5)
-	sgd = torch.optim.SGD(model.parameters(), lr=args.learning_rate)
+	adam = torch.optim.Adam(model.parameters(), lr=cfg['learning_rate'], weight_decay=1e-5)
+	sgd = torch.optim.SGD(model.parameters(), lr=cfg['learning_rate'])
 
 	optimizer = adam
 
-	for ei in range(args.resume_epoch, args.num_epochs):
+	for ei in range(cfg['resume_epoch'], cfg['num_epochs']):
 		for bi, (img, patches, _) in enumerate(dataloader):
 
 			avg_loss = 0
@@ -42,16 +49,16 @@ def train(args):
 					y = model(x)
 					loss = mse_loss(y, x)
 
-					avg_loss += (1/60) * loss.item()
+					avg_loss += (1 / 60) * loss.item()
 
 					optimizer.zero_grad()
 					loss.backward()
 					optimizer.step()
 
-			print('[%3d/%3d][%5d/%5d] loss: %f' % (ei, args.num_epochs, bi, len(dataloader), avg_loss))
+			logger.debug('[%3d/%3d][%5d/%5d] loss: %f' % (ei, cfg['num_epochs'], bi, len(dataloader), avg_loss))
 
 			# save img
-			if bi % args.out_every == 0:
+			if bi % cfg['out_every'] == 0:
 				out = torch.zeros(6, 10, 3, 128, 128)
 				for i in range(6):
 					for j in range(10):
@@ -63,32 +70,22 @@ def train(args):
 				out = np.transpose(out, (2, 0, 1))
 
 				y = torch.cat((img[0], out), dim=2).unsqueeze(0)
-				save_imgs(imgs=y, to_size=(3, 768, 2 * 1280), name=f"out/{args.exp_name}/out_{ei}_{bi}.png")
+				save_imgs(imgs=y, to_size=(3, 768, 2 * 1280), name=f"out/{cfg['exp_name']}/out_{ei}_{bi}.png")
 
 			# save model
-			if bi % args.save_every == args.save_every - 1:
-				torch.save(model.state_dict(), f"checkpoints/{args.exp_name}/model_{ei}_{bi}.state")
+			if bi % cfg['save_every'] == cfg['save_every'] - 1:
+				torch.save(model.state_dict(), f"checkpoints/{cfg['exp_name']}/model_{ei}_{bi}.state")
 
-	torch.save(model.state_dict(), f"checkpoints/{args.exp_name}/model_final.state")
+	# save final model
+	torch.save(model.state_dict(), f"checkpoints/{cfg['exp_name']}/model_final.state")
+
+
+def main(args):
+	cfg = json.load(open(args.cfg, "rt"))
+	train(cfg)
 
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
-	parser.add_argument('--num_epochs', type=int, default=10)
-	parser.add_argument('--batch_size', type=int, default=32)
-	parser.add_argument('--learning_rate', type=float, default=1e-3)
-	parser.add_argument('--load', action='store_true')
-	parser.add_argument('--chkpt', type=str)
-	parser.add_argument('--resume_epoch', type=int, default=0)
-	parser.add_argument('--exp_name', type=str, required=True)
-	parser.add_argument('--save_every', type=int, default=100)
-	parser.add_argument('--out_every', type=int, default=10)
-	parser.add_argument('--shuffle', action='store_true')
-	parser.add_argument('--dataset_path', type=str, required=True)
-	parser.add_argument('--num_workers', type=int, default=0)
-	args = parser.parse_args()
-
-	os.makedirs(f"out/{args.exp_name}", exist_ok=True)
-	os.makedirs(f"checkpoints/{args.exp_name}", exist_ok=True)
-
-	train(args)
+	parser.add_argument('--cfg', type=str, required=True)
+	main(parser.parse_args())

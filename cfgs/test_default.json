@@ -1,0 +1,6 @@
+{
+  "chkpt"       : "",
+  "out_dir"     : "./test_default",
+  "shuffle"     : false,
+  "dataset_path": "../datasets/youtube_frames_720p_bigger"
+}
