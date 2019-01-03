@@ -18,6 +18,11 @@ def train(cfg):
 	os.makedirs(f"out/{cfg['exp_name']}", exist_ok=True)
 	os.makedirs(f"checkpoints/{cfg['exp_name']}", exist_ok=True)
 
+	# dump config for current experiment
+	with open(f"checkpoints/{cfg['exp_name']}/setup.cfg", "wt") as f:
+		for k, v in cfg.items():
+			f.write("%15s: %s\n" % (k, v))
+
 	model = CAE().cuda()
 
 	if cfg['load']:
@@ -39,7 +44,6 @@ def train(cfg):
 
 	optimizer = adam
 
-
 	for ei in range(cfg['resume_epoch'], cfg['num_epochs']):
 		for bi, (img, patches, _) in enumerate(dataloader):
 
@@ -56,7 +60,7 @@ def train(cfg):
 					loss.backward()
 					optimizer.step()
 
-			logger.debug('[%3d/%3d][%5d/%5d] loss: %f' % (ei, cfg['num_epochs'], bi, len(dataloader), avg_loss))
+			logger.debug('[%3d/%3d][%5d/%5d] loss: %f' % (ei + 1, cfg['num_epochs'], bi + 1, len(dataloader), avg_loss))
 
 			# save img
 			if bi % cfg['out_every'] == 0:
@@ -82,8 +86,7 @@ def train(cfg):
 
 
 def main(args):
-	cfg = json.load(open(args.cfg, "rt"))
-	train(cfg)
+	train(cfg=json.load(open(args.cfg, "rt")))
 
 
 if __name__ == '__main__':
