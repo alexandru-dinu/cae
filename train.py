@@ -39,7 +39,8 @@ def train(cfg):
 
 	optimizer = adam
 
-	for ei in range(cfg['resume_epoch'], cfg['args.num_epochs']):
+
+	for ei in range(cfg['resume_epoch'], cfg['num_epochs']):
 		for bi, (img, patches, _) in enumerate(dataloader):
 
 			avg_loss = 0
