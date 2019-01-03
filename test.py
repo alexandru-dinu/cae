@@ -9,7 +9,7 @@ from torch.autograd import Variable
 from torch.utils.data import DataLoader
 
 from image_folder import ImageFolder720p
-from models.model_ae_conv_32x32x32_zero_pad_bin import AutoencoderConv
+from models.cae_32x32x32_zero_pad_bin import CAE
 from utils import save_imgs
 
 import logger
@@ -18,7 +18,7 @@ import logger
 def test(cfg):
 	os.makedirs(f"./test/{cfg['out_dir']}", exist_ok=True)
 
-	model = AutoencoderConv().cuda()
+	model = CAE().cuda()
 	model.load_state_dict(torch.load(cfg['chkpt']))
 	model.eval()
 	logger.info("Loaded model from", cfg['chkpt'])

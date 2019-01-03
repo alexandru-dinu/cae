@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 
 import logger
 from image_folder import ImageFolder720p
-from models.model_ae_conv_32x32x32_zero_pad_bin import AutoencoderConv
+from models.cae_32x32x32_zero_pad_bin import CAE
 from utils import save_imgs
 
 
@@ -18,7 +18,7 @@ def train(cfg):
 	os.makedirs(f"out/{cfg['exp_name']}", exist_ok=True)
 	os.makedirs(f"checkpoints/{cfg['exp_name']}", exist_ok=True)
 
-	model = AutoencoderConv().cuda()
+	model = CAE().cuda()
 
 	if cfg['load']:
 		model.load_state_dict(torch.load(cfg['chkpt']))

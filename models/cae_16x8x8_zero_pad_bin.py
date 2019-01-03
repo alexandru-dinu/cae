@@ -1,20 +1,19 @@
 import torch
 import torch.nn as nn
-import numpy as np
 
 
-# will see 3x128x128 patches
-class AutoencoderConv(nn.Module):
+class CAE(nn.Module):
 	"""
 	This AE module will be fed 3x128x128 patches from the original image
-
 	Shapes are (batch_size, channels, height, width)
+
+	Latent representation: 16x8x8 bits per patch => 7.5KB per image (for 720p)
 	"""
 
 	def __init__(self):
-		super(AutoencoderConv, self).__init__()
+		super(CAE, self).__init__()
 
-		self.enc_x = None
+		self.encoded = None
 
 		# ENCODER
 
@@ -33,7 +32,7 @@ class AutoencoderConv(nn.Module):
 		)
 
 		# 128x32x32
-		self.e_bb_1 = nn.Sequential(
+		self.e_block_1 = nn.Sequential(
 			nn.ZeroPad2d((1, 1, 1, 1)),
 			nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
 			nn.LeakyReLU(),
@@ -48,7 +47,7 @@ class AutoencoderConv(nn.Module):
 		)
 
 		# 128x16x16
-		self.e_bb_2 = nn.Sequential(
+		self.e_block_2 = nn.Sequential(
 			nn.ZeroPad2d((1, 1, 1, 1)),
 			nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
 			nn.LeakyReLU(),
@@ -58,7 +57,7 @@ class AutoencoderConv(nn.Module):
 		)
 
 		# 128x16x16
-		self.e_bb_3 = nn.Sequential(
+		self.e_block_3 = nn.Sequential(
 			nn.ZeroPad2d((1, 1, 1, 1)),
 			nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
 			nn.LeakyReLU(),
@@ -77,7 +76,7 @@ class AutoencoderConv(nn.Module):
 		# DECODER
 
 		# 128x16x16
-		self.d_subpix_1 = nn.Sequential(
+		self.d_up_conv_1 = nn.Sequential(
 			nn.Conv2d(in_channels=16, out_channels=64, kernel_size=(3, 3), stride=(1, 1)),
 			nn.LeakyReLU(),
 
@@ -86,7 +85,7 @@ class AutoencoderConv(nn.Module):
 		)
 
 		# 128x16x16
-		self.d_bb_1 = nn.Sequential(
+		self.d_block_1 = nn.Sequential(
 			nn.ZeroPad2d((1, 1, 1, 1)),
 			nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
 			nn.LeakyReLU(),
@@ -101,7 +100,7 @@ class AutoencoderConv(nn.Module):
 		)
 
 		# 128x32x32
-		self.d_bb_2 = nn.Sequential(
+		self.d_block_2 = nn.Sequential(
 			nn.ZeroPad2d((1, 1, 1, 1)),
 			nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
 			nn.LeakyReLU(),
@@ -111,7 +110,7 @@ class AutoencoderConv(nn.Module):
 		)
 
 		# 128x32x32
-		self.d_bb_3 = nn.Sequential(
+		self.d_block_3 = nn.Sequential(
 			nn.ZeroPad2d((1, 1, 1, 1)),
 			nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
 			nn.LeakyReLU(),
@@ -121,7 +120,7 @@ class AutoencoderConv(nn.Module):
 		)
 
 		# 256x64x64
-		self.d_subpix_2 = nn.Sequential(
+		self.d_up_conv_2 = nn.Sequential(
 			nn.Conv2d(in_channels=128, out_channels=32, kernel_size=(3, 3), stride=(1, 1)),
 			nn.LeakyReLU(),
 
@@ -130,7 +129,7 @@ class AutoencoderConv(nn.Module):
 		)
 
 		# 3x128x128
-		self.d_subpix_3 = nn.Sequential(
+		self.d_up_conv_3 = nn.Sequential(
 			nn.Conv2d(in_channels=256, out_channels=16, kernel_size=(3, 3), stride=(1, 1)),
 			nn.LeakyReLU(),
 
@@ -143,35 +142,34 @@ class AutoencoderConv(nn.Module):
 		# ENCODE
 		ec1 = self.e_conv_1(x)
 		ec2 = self.e_conv_2(ec1)
-		ebb1 = self.e_bb_1(ec2)
-		ebb1 = self.e_pool_1(ec2 + ebb1)
-		ebb2 = self.e_bb_2(ebb1) + ebb1
-		ebb3 = self.e_bb_3(ebb2) + ebb2
-		ec3 = self.e_conv_3(ebb3)  # in [-1, 1]
+		eblock1 = self.e_block_1(ec2)
+		eblock1 = self.e_pool_1(ec2 + eblock1)
+		eblock2 = self.e_block_2(eblock1) + eblock1
+		eblock3 = self.e_block_3(eblock2) + eblock2
+		ec3 = self.e_conv_3(eblock3)  # in [-1, 1] from tanh activation
 
-		# TODO
+		# stochastic binarization
 		with torch.no_grad():
-			r = torch.rand(ec3.shape).cuda()
-			p = (1 + ec3) / 2
+			rand = torch.rand(ec3.shape).cuda()
+			prob = (1 + ec3) / 2
 			eps = torch.zeros(ec3.shape).cuda()
-			eps[r <= p] = (1 - ec3)[r <= p]
-			eps[r > p] = (-ec3 - 1)[r > p]
+			eps[rand <= prob] = (1 - ec3)[rand <= prob]
+			eps[rand > prob] = (-ec3 - 1)[rand > prob]
 
 		# encoded tensor
-		self.enc_x = 0.5 * (ec3 + eps + 1)  # (-1|1) -> (0|1)
-		dec = self.decode(self.enc_x)
+		self.encoded = 0.5 * (ec3 + eps + 1)  # (-1|1) -> (0|1)
 
-		return dec
+		return self.decode(self.encoded)
 
 	def decode(self, enc):
 		y = enc * 2.0 - 1  # (0|1) -> (-1, 1)
 
-		cc1 = self.d_subpix_1(y)
-		dbb1 = self.d_bb_1(cc1) + cc1
-		dup1 = self.d_up_1(dbb1)
-		dbb2 = self.d_bb_2(dup1) + dup1
-		dbb3 = self.d_bb_3(dbb2) + dbb2
-		cc2 = self.d_subpix_2(dbb3)
-		dec = self.d_subpix_3(cc2)
+		uc1 = self.d_up_conv_1(y)
+		dblock1 = self.d_block_1(uc1) + uc1
+		dup1 = self.d_up_1(dblock1)
+		dblock2 = self.d_block_2(dup1) + dup1
+		dblock3 = self.d_block_3(dblock2) + dblock2
+		uc2 = self.d_up_conv_2(dblock3)
+		dec = self.d_up_conv_3(uc2)
 
 		return dec
