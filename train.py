@@ -44,6 +44,8 @@ def train(cfg):
 
 	optimizer = adam
 
+	ra = 0
+
 	for ei in range(cfg['resume_epoch'], cfg['num_epochs']):
 		for bi, (img, patches, _) in enumerate(dataloader):
 
@@ -60,7 +62,12 @@ def train(cfg):
 					loss.backward()
 					optimizer.step()
 
-			logger.debug('[%3d/%3d][%5d/%5d] loss: %f' % (ei + 1, cfg['num_epochs'], bi + 1, len(dataloader), avg_loss))
+			ra = avg_loss if bi == 0 else ra * bi / (bi + 1) + avg_loss / (bi + 1)
+
+			logger.debug(
+				'[%3d/%3d][%5d/%5d] avg_loss: %f, ra: %f' %
+				(ei + 1, cfg['num_epochs'], bi + 1, len(dataloader), avg_loss, ra)
+			)
 
 			# save img
 			if bi % cfg['out_every'] == 0:
