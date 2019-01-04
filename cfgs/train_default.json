@@ -1,5 +1,5 @@
 {
-  "num_epochs"   : 4,
+  "num_epochs"   : 5,
   "batch_size"   : 1,
   "learning_rate": 0.00001,
   "load"         : false,
@@ -7,8 +7,8 @@
   "resume_epoch" : 0,
   "exp_name"     : "default",
   "save_every"   : 500,
-  "out_every"    : 2,
+  "out_every"    : 50,
   "shuffle"      : true,
-  "dataset_path" : "../datasets/youtube_frames_720p_bigger",
+  "dataset_path" : "../datasets/youtube_frames_720p",
   "num_workers"  : 0
 }
