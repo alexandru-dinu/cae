@@ -1,6 +1,6 @@
 # Lossy Image Compression with Compressive Autoencoders
 
-See [wiki](https://github.com/alexandru-dinu/cae/wiki) for more details.
+See [wiki](https://github.com/alexandru-dinu/cae/wiki) for more details and further results.
 
 ## Results
 
