@@ -1,6 +1,6 @@
 {
   "chkpt"       : "",
-  "out_dir"     : "./test_default",
+  "exp_name"    : "default",
   "shuffle"     : false,
-  "dataset_path": "../datasets/youtube_frames_720p_bigger"
+  "dataset_path": "../datasets/testing"
 }

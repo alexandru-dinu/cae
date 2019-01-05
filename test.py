@@ -15,7 +15,7 @@ from utils import save_imgs
 
 
 def test(cfg):
-	os.makedirs(f"./test/{cfg['out_dir']}", exist_ok=True)
+	os.makedirs(f"./test/{cfg['exp_name']}", exist_ok=True)
 
 	model = CAE().cuda()
 
@@ -30,7 +30,6 @@ def test(cfg):
 	mse_loss = nn.MSELoss()
 
 	for bi, (img, patches, path) in enumerate(dataloader):
-		if "frame_40" not in path[0]: continue
 
 		out = torch.zeros(6, 10, 3, 128, 128)
 		# enc = torch.zeros(6, 10, 16, 8, 8)
@@ -49,9 +48,9 @@ def test(cfg):
 				out[i, j] = y.data
 
 				loss = mse_loss(y, x)
-				avg_loss += 0.6 * loss.item()
+				avg_loss += (1 / 60) * loss.item()
 
-		logger.debug('[%5d/%5d] loss: %f' % (bi, len(dataloader), avg_loss))
+		logger.debug('[%5d/%5d] avg_loss: %f' % (bi, len(dataloader), avg_loss))
 
 		# save output
 		out = np.transpose(out, (0, 3, 1, 4, 2))
@@ -59,15 +58,13 @@ def test(cfg):
 		out = np.transpose(out, (2, 0, 1))
 
 		y = torch.cat((img[0], out), dim=2)
-		save_imgs(imgs=y.unsqueeze(0), to_size=(3, 768, 2 * 1280), name=f"./test/{cfg['out_dir']}/test_{bi}.png")
-
-		break
+		save_imgs(imgs=y.unsqueeze(0), to_size=(3, 768, 2 * 1280), name=f"./test/{cfg['exp_name']}/test_{bi}.png")
 
 
 # save encoded
 # enc = np.reshape(enc, -1)
 # sz = str(len(enc)) + 'd'
-# open(f"./{cfg['out_dir']}/test_{bi}.enc", "wb").write(struct.pack(sz, *enc))
+# open(f"./{cfg['exp_name']}/test_{bi}.enc", "wb").write(struct.pack(sz, *enc))
 
 def main(args):
 	cfg = json.load(open(args.cfg, "rt"))
