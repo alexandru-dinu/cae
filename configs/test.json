@@ -1,0 +1,9 @@
+{
+  "chkpt"       : null,
+  "exp_name"    : "default",
+  "batch_every" : 100,
+  "shuffle"     : false,
+  "dataset_path": "/home/alex/workspace/datasets/cae/random-test-set",
+  "num_workers" : 1,
+  "device"      : "cuda"
+}

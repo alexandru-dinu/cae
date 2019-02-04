@@ -1,0 +1,16 @@
+{
+  "num_epochs"   : 5,
+  "batch_size"   : 2,
+  "learning_rate": 1e-4,
+  "resume"       : false,
+  "chkpt"        : null,
+  "start_epoch"  : 1,
+  "exp_name"     : "default",
+  "batch_every"  : 1,
+  "save_every"   : 10,
+  "epoch_every"  : 1,
+  "shuffle"      : true,
+  "dataset_path" : "/home/alex/workspace/datasets/cae/youtube_frames_720p",
+  "num_workers"  : 2,
+  "device"       : "cuda"
+}
