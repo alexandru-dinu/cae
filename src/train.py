@@ -56,14 +56,10 @@ def train(cfg: Namespace) -> None:
     model.train()
     if cfg.device == "cuda":
         model.cuda()
-
-    logger.debug("Model loaded")
+    logger.debug(f"Model loaded on {cfg.device}")
 
     dataset = ImageFolder720p(cfg.dataset_path)
-    dataloader = DataLoader(
-        dataset, batch_size=cfg.batch_size, shuffle=cfg.shuffle, num_workers=cfg.num_workers
-    )
-
+    dataloader = DataLoader(dataset, batch_size=cfg.batch_size, shuffle=cfg.shuffle, num_workers=cfg.num_workers)
     logger.debug("Data loaded")
 
     optimizer = optim.Adam(model.parameters(), lr=cfg.learning_rate, weight_decay=1e-5)

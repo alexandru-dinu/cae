@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 
 import logger
 from data_loader import ImageFolder720p
-from utils import get_config, get_args, dump_cfg, save_imgs
+from utils import dump_cfg, get_args, get_config, save_imgs
 
 # models
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "../models"))
@@ -85,7 +85,7 @@ def test(cfg: Namespace) -> None:
         out = np.transpose(out, (2, 0, 1))
 
         y = torch.cat((img[0], out), dim=2)
-        save_imgs(imgs=y.unsqueeze(0), to_size=(3, 768, 2 * 1280), name=f"../experiments/{cfg.exp_name}/out/test_{bi}.png")
+        save_imgs(imgs=y.unsqueeze(0), to_size=(3, 768, 2 * 1280), name=f"../experiments/{cfg.exp_name}/out/test_{batch_idx}.png")
 
     # final setup
     epilogue(cfg)

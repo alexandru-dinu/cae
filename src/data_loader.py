@@ -11,10 +11,8 @@ class ImageFolder720p(Dataset):
     Image shape is (720, 1280, 3) --> (768, 1280, 3) --> 6x10 128x128 patches
     """
 
-
     def __init__(self, folder_path):
         self.files = sorted(glob.glob('%s/*.*' % folder_path))
-
 
     def __getitem__(self, index):
         path = self.files[index % len(self.files)]
@@ -34,11 +32,9 @@ class ImageFolder720p(Dataset):
 
         return img, patches, path
 
-
     def get_random(self):
         i = np.random.randint(0, len(self.files))
         return self[i]
-
 
     def __len__(self):
         return len(self.files)

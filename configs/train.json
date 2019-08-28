@@ -10,7 +10,7 @@
   "save_every"   : 10,
   "epoch_every"  : 1,
   "shuffle"      : true,
-  "dataset_path" : "/home/alex/workspace/datasets/cae/youtube_frames_720p",
+  "dataset_path" : "/run/media/alex/Kingston/ml-data/cae/datasets/youtube-frames-720p",
   "num_workers"  : 2,
   "device"       : "cuda"
 }
