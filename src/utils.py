@@ -22,13 +22,20 @@ def save_imgs(imgs, to_size, name) -> None:
 def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--cfg", type=str, required=True)
+    # specify path to json config or directly the json contents as string (e.g. for api)
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('--cfg', type=str)
+    group.add_argument('--api', type=str)
 
     return parser.parse_args()
 
 
 def get_config(args: argparse.Namespace) -> argparse.Namespace:
-    cfg_dict = json.load(open(args.cfg, "rt"))
+    if args.cfg is not None:
+        cfg_dict = json.load(open(args.cfg, "rt"))
+    else:
+        cfg_dict = eval(args.api)
+
     return argparse.Namespace(**cfg_dict)
 
 

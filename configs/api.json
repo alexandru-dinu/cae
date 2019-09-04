@@ -1,0 +1,10 @@
+{
+    "chkpt"                : "/run/media/alex/Kingston/ml-data/cae/model_yt_2286_final.state",
+    "exp_name"             : "api",
+    "batch_every"          : 100,
+    "shuffle"              : false,
+    "dataset_path"         : "/run/media/alex/Kingston/ml-data/cae/datasets/testing",
+    "num_workers"          : 1,
+    "device"               : "cuda",
+    "smoothing_window_size": 6
+}
