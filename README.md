@@ -19,6 +19,6 @@ See [wiki](https://github.com/alexandru-dinu/cae/wiki) for more details, downloa
 ![](https://i.imgur.com/ARbPB86.jpg)
 
 ## References
-[1] [Lossy Image Compression with Compressive Autoencoders, Theis et al.](https://arxiv.org/abs/1703.00395)
 
-[2] [Variable Rate Image Compression with Recurrent Neural Networks, Toderici et al.](http://arxiv.org/abs/1511.06085)
+- [1] [Lossy Image Compression with Compressive Autoencoders, Theis et al.](https://arxiv.org/abs/1703.00395)
+- [2] [Variable Rate Image Compression with Recurrent Neural Networks, Toderici et al.](http://arxiv.org/abs/1511.06085)
