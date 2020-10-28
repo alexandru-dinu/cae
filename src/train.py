@@ -3,27 +3,29 @@ import sys
 from argparse import Namespace
 
 import numpy as np
-import torch
+import torch as T
 import torch.nn as nn
 import torch.optim as optim
 from tensorboardX import SummaryWriter
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
 
-import logger
 from data_loader import ImageFolder720p
 from utils import get_config, get_args, dump_cfg
 from utils import save_imgs
 
+from bagoftools.logger import Logger
+
 # models
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "../models"))
-
 from cae_32x32x32_zero_pad_bin import CAE
+
+logger = Logger(name='train', colorize=True)
 
 
 def prologue(cfg: Namespace, *varargs) -> SummaryWriter:
     # sanity checks
-    assert cfg.device == "cpu" or (cfg.device == "cuda" and torch.cuda.is_available())
+    assert cfg.device == "cpu" or (cfg.device == "cuda" and T.cuda.is_available())
 
     # dirs
     base_dir = f"../experiments/{cfg.exp_name}"
@@ -46,7 +48,7 @@ def epilogue(cfg: Namespace, *varargs) -> None:
 
 
 def train(cfg: Namespace) -> None:
-    logger.info("=== Training ===")
+    logger.info('starting training')
 
     # initial setup
     writer = prologue(cfg)
@@ -111,7 +113,7 @@ def train(cfg: Namespace) -> None:
                 ts += 1
 
             if batch_idx % cfg.save_every == 0:
-                out = torch.zeros(6, 10, 3, 128, 128)
+                out = T.zeros(6, 10, 3, 128, 128)
                 for i in range(6):
                     for j in range(10):
                         x = Variable(patches[0, :, i, j, :, :].unsqueeze(0)).cuda()
@@ -121,7 +123,7 @@ def train(cfg: Namespace) -> None:
                 out = np.reshape(out, (768, 1280, 3))
                 out = np.transpose(out, (2, 0, 1))
 
-                y = torch.cat((img[0], out), dim=2).unsqueeze(0)
+                y = T.cat((img[0], out), dim=2).unsqueeze(0)
                 save_imgs(imgs=y, to_size=(3, 768, 2 * 1280), name=f"../experiments/{cfg.exp_name}/out/out_{epoch_idx}_{batch_idx}.png")
 
         # -- batch-loop
@@ -133,19 +135,16 @@ def train(cfg: Namespace) -> None:
 
             logger.info("Epoch avg = %.8f" % epoch_avg)
             epoch_avg = 0.0
-            torch.save(model.state_dict(), f"../experiments/{cfg.exp_name}/chkpt/model_{epoch_idx}.pth")
+            T.save(model.state_dict(), f"../experiments/{cfg.exp_name}/chkpt/model_{epoch_idx}.pth")
 
     # -- train-loop
 
     # save final model
-    torch.save(model.state_dict(), f"../experiments/{cfg.exp_name}/model_final.pth")
+    T.save(model.state_dict(), f"../experiments/{cfg.exp_name}/model_final.pth")
 
     # final setup
     epilogue(cfg, writer)
 
 
 if __name__ == '__main__':
-    args = get_args()
-    config = get_config(args)
-
-    train(config)
+    train(get_config(get_args()))

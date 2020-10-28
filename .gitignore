@@ -1,6 +1,7 @@
-experiments
-.vscode
-.idea
+.idea/
+.vscode/
+
+experiments/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
