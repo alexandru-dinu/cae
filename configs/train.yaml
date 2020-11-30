@@ -1,0 +1,14 @@
+num_epochs: 1
+batch_size: 16
+learning_rate: 0.0001
+resume: false
+checkpoint: null
+start_epoch: 1
+exp_name: testinggg
+batch_every: 1
+save_every: 10
+epoch_every: 1
+shuffle: true
+dataset_path: "/home/alex/workspace/ml-data/cae/datasets/yt_small_720p"
+num_workers: 2
+device: cuda

@@ -1,0 +1,7 @@
+checkpoint: "/home/alex/workspace/ml-data/cae/model_yt_small_final.state"
+exp_name: default
+batch_every: 100
+shuffle: false
+dataset_path: "/home/alex/workspace/ml-data/cae/datasets/testing"
+num_workers: 1
+device: cuda
