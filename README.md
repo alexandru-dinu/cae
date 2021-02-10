@@ -1,4 +1,6 @@
-# Lossy Image Compression with Compressive Autoencoders
+## Lossy Image Compression with Compressive Autoencoders
+
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 The quickest way to start experimenting is to use [this model](https://drive.google.com/open?id=1SSek44svPAZClmOg8xX-DLDUxQdnK22A) trained on [this smaller dataset](https://drive.google.com/open?id=1wbwkpz38stSFMwgEKhoDCQCMiLLFVC4T). An arbitrary dataset can be constructed by downloading frames using the scripts provided [here](https://github.com/gsssrao/youtube-8m-videos-frames).
 

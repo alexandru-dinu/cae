@@ -16,9 +16,10 @@ def save_imgs(imgs, to_size, name) -> None:
     imgs = imgs.view(imgs.size(0), *to_size)
     save_image(imgs, name)
 
+
 def save_encoded(enc: np.ndarray, fname: str) -> None:
     enc = np.reshape(enc, -1)
-    sz = str(len(enc)) + 'd'
+    sz = str(len(enc)) + "d"
 
-    with open(fname, 'wb') as fp:
+    with open(fname, "wb") as fp:
         fp.write(struct.pack(sz, *enc))

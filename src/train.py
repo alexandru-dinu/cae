@@ -26,30 +26,35 @@ logger = Logger(name=__name__, colorize=True)
 
 
 def train(cfg: Namespace) -> None:
-    assert cfg.device == 'cpu' or (cfg.device == 'cuda' and T.cuda.is_available())
+    assert cfg.device == "cpu" or (cfg.device == "cuda" and T.cuda.is_available())
 
-    logger.info('training: experiment %s' % (cfg.exp_name))
+    logger.info("training: experiment %s" % (cfg.exp_name))
 
     # make dir-tree
-    exp_dir = ROOT_DIR / 'experiments' / cfg.exp_name
+    exp_dir = ROOT_DIR / "experiments" / cfg.exp_name
 
-    for d in ['out', 'checkpoint', 'logs']:
+    for d in ["out", "checkpoint", "logs"]:
         os.makedirs(exp_dir / d, exist_ok=True)
 
-    cfg.to_file(exp_dir / 'train_config.txt')
+    cfg.to_file(exp_dir / "train_config.txt")
 
     # tb writer
-    writer = SummaryWriter(exp_dir / 'logs')
+    writer = SummaryWriter(exp_dir / "logs")
 
     model = CAE()
     model.train()
-    if cfg.device == 'cuda':
+    if cfg.device == "cuda":
         model.cuda()
-    logger.info(f'loaded model on {cfg.device}')
+    logger.info(f"loaded model on {cfg.device}")
 
     dataset = ImageFolder720p(cfg.dataset_path)
-    dataloader = DataLoader(dataset, batch_size=cfg.batch_size, shuffle=cfg.shuffle, num_workers=cfg.num_workers)
-    logger.info('loaded dataset')
+    dataloader = DataLoader(
+        dataset,
+        batch_size=cfg.batch_size,
+        shuffle=cfg.shuffle,
+        num_workers=cfg.num_workers,
+    )
+    logger.info("loaded dataset")
 
     optimizer = optim.Adam(model.parameters(), lr=cfg.learning_rate, weight_decay=1e-5)
     loss_criterion = nn.MSELoss()
@@ -63,7 +68,7 @@ def train(cfg: Namespace) -> None:
         for batch_idx, data in enumerate(dataloader, start=1):
             img, patches, _ = data
 
-            if cfg.device == 'cuda':
+            if cfg.device == "cuda":
                 patches = patches.cuda()
 
             avg_loss_per_image = 0.0
@@ -80,18 +85,25 @@ def train(cfg: Namespace) -> None:
                     loss.backward()
                     optimizer.step()
 
-            avg_loss  += avg_loss_per_image
+            avg_loss += avg_loss_per_image
             epoch_avg += avg_loss_per_image
 
             if batch_idx % cfg.batch_every == 0:
-                writer.add_scalar('train/avg_loss', avg_loss / cfg.batch_every, ts)
+                writer.add_scalar("train/avg_loss", avg_loss / cfg.batch_every, ts)
 
                 for name, param in model.named_parameters():
                     writer.add_histogram(name, param, ts)
 
                 logger.debug(
-                    '[%3d/%3d][%5d/%5d] avg_loss: %.8f' % (
-                    epoch_idx, cfg.num_epochs, batch_idx, len(dataloader), avg_loss / cfg.batch_every))
+                    "[%3d/%3d][%5d/%5d] avg_loss: %.8f"
+                    % (
+                        epoch_idx,
+                        cfg.num_epochs,
+                        batch_idx,
+                        len(dataloader),
+                        avg_loss / cfg.batch_every,
+                    )
+                )
 
                 avg_loss = 0.0
                 ts += 1
@@ -109,38 +121,43 @@ def train(cfg: Namespace) -> None:
                 out = np.transpose(out, (2, 0, 1))
 
                 y = T.cat((img[0], out), dim=2).unsqueeze(0)
-                save_imgs(imgs=y,
+                save_imgs(
+                    imgs=y,
                     to_size=(3, 768, 2 * 1280),
-                    name=exp_dir / f'out/{epoch_idx}_{batch_idx}.png')
+                    name=exp_dir / f"out/{epoch_idx}_{batch_idx}.png",
+                )
             # -- end save every
         # -- end batches
 
         if epoch_idx % cfg.epoch_every == 0:
-            epoch_avg /= (len(dataloader) * cfg.epoch_every)
+            epoch_avg /= len(dataloader) * cfg.epoch_every
 
-            writer.add_scalar('train/epoch_avg_loss',
-                avg_loss / cfg.batch_every, epoch_idx // cfg.epoch_every)
+            writer.add_scalar(
+                "train/epoch_avg_loss",
+                avg_loss / cfg.batch_every,
+                epoch_idx // cfg.epoch_every,
+            )
 
-            logger.info('Epoch avg = %.8f' % epoch_avg)
+            logger.info("Epoch avg = %.8f" % epoch_avg)
             epoch_avg = 0.0
 
-            T.save(model.state_dict(), exp_dir / f'checkpoint/model_{epoch_idx}.pth')
+            T.save(model.state_dict(), exp_dir / f"checkpoint/model_{epoch_idx}.pth")
         # -- end epoch every
-   # -- end epoch
+    # -- end epoch
 
     # save final model
-    T.save(model.state_dict(), exp_dir / 'model_final.pth')
+    T.save(model.state_dict(), exp_dir / "model_final.pth")
 
     # cleaning
     writer.close()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config', type=str, required=True)
+    parser.add_argument("--config", type=str, required=True)
     args = parser.parse_args()
 
-    with open(args.config, 'rt') as fp:
+    with open(args.config, "rt") as fp:
         cfg = Namespace(**yaml.safe_load(fp))
 
     train(cfg)

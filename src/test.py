@@ -20,7 +20,7 @@ from cae_32x32x32_zero_pad_bin import CAE
 
 def prologue(cfg: Namespace, *varargs) -> None:
     # sanity checks
-    assert cfg.chkpt not in [None, ""]
+    assert cfg.checkpoint not in [None, ""]
     assert cfg.device == "cpu" or (cfg.device == "cuda" and torch.cuda.is_available())
 
     # dirs
@@ -42,7 +42,7 @@ def test(cfg: Namespace) -> None:
     prologue(cfg)
 
     model = CAE()
-    model.load_state_dict(torch.load(cfg.chkpt))
+    model.load_state_dict(torch.load(cfg.checkpoint))
     model.eval()
     if cfg.device == "cuda":
         model.cuda()
@@ -58,7 +58,7 @@ def test(cfg: Namespace) -> None:
 
     for batch_idx, data in enumerate(dataloader, start=1):
         img, patches, _ = data
-        if cfg.device == 'cuda':
+        if cfg.device == "cuda":
             patches = patches.cuda()
 
         if batch_idx % cfg.batch_every == 0:
@@ -77,7 +77,7 @@ def test(cfg: Namespace) -> None:
                 loss = loss_criterion(y, x)
                 avg_loss += (1 / 60) * loss.item()
 
-        logger.debug('[%5d/%5d] avg_loss: %f' % (batch_idx, len(dataloader), avg_loss))
+        logger.debug("[%5d/%5d] avg_loss: %f" % (batch_idx, len(dataloader), avg_loss))
 
         # save output
         out = np.transpose(out, (0, 3, 1, 4, 2))
@@ -85,13 +85,17 @@ def test(cfg: Namespace) -> None:
         out = np.transpose(out, (2, 0, 1))
 
         y = torch.cat((img[0], out), dim=2)
-        save_imgs(imgs=y.unsqueeze(0), to_size=(3, 768, 2 * 1280), name=f"../experiments/{cfg.exp_name}/out/test_{batch_idx}.png")
+        save_imgs(
+            imgs=y.unsqueeze(0),
+            to_size=(3, 768, 2 * 1280),
+            name=f"../experiments/{cfg.exp_name}/out/test_{batch_idx}.png",
+        )
 
     # final setup
     epilogue(cfg)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     args = get_args()
     config = get_config(args)
 
