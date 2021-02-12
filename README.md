@@ -44,8 +44,8 @@ python test.py --config ../configs/test.yaml
 
 Example `test.yaml`:
 ```yaml
-checkpoint: model.state
 exp_name: testing
+checkpoint: model.state
 batch_every: 100
 shuffle: true
 dataset_path: datasets/testing
