@@ -1,4 +1,5 @@
-import glob
+from pathlib import Path
+from typing import Tuple
 
 import numpy as np
 import torch as T
@@ -11,11 +12,11 @@ class ImageFolder720p(Dataset):
     Image shape is (720, 1280, 3) --> (768, 1280, 3) --> 6x10 128x128 patches
     """
 
-    def __init__(self, folder_path):
-        self.files = sorted(glob.glob("%s/*.*" % folder_path))
+    def __init__(self, root: str):
+        self.files = sorted(Path(root).iterdir())
 
-    def __getitem__(self, index):
-        path = self.files[index % len(self.files)]
+    def __getitem__(self, index: int) -> Tuple[T.Tensor, np.ndarray, str]:
+        path = str(self.files[index % len(self.files)])
         img = np.array(Image.open(path))
 
         pad = ((24, 24), (0, 0), (0, 0))
@@ -30,10 +31,6 @@ class ImageFolder720p(Dataset):
         patches = np.transpose(patches, (0, 1, 3, 2, 4))
 
         return img, patches, path
-
-    def get_random(self):
-        i = np.random.randint(0, len(self.files))
-        return self[i]
 
     def __len__(self):
         return len(self.files)

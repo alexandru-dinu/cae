@@ -17,29 +17,29 @@ from utils import save_imgs
 from bagoftools.namespace import Namespace
 from bagoftools.logger import Logger
 
-# paths
-ROOT_DIR = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT_DIR))
 from models.cae_32x32x32_zero_pad_bin import CAE
 
-logger = Logger(name=__name__, colorize=True)
+logger = Logger(__name__, colorize=True)
 
 
 def train(cfg: Namespace) -> None:
     assert cfg.device == "cpu" or (cfg.device == "cuda" and T.cuda.is_available())
 
+    root_dir = Path(__file__).resolve().parents[1]
+
     logger.info("training: experiment %s" % (cfg.exp_name))
 
     # make dir-tree
-    exp_dir = ROOT_DIR / "experiments" / cfg.exp_name
+    exp_dir = root_dir / "experiments" / cfg.exp_name
 
     for d in ["out", "checkpoint", "logs"]:
         os.makedirs(exp_dir / d, exist_ok=True)
 
-    cfg.to_file(exp_dir / "train_config.txt")
+    cfg.to_file(exp_dir / "train_config.json")
 
-    # tb writer
-    writer = SummaryWriter(exp_dir / "logs")
+    # tb tb_writer
+    tb_writer = SummaryWriter(exp_dir / "logs")
+    logger.info("started tensorboard writer")
 
     model = CAE()
     model.train()
@@ -47,14 +47,13 @@ def train(cfg: Namespace) -> None:
         model.cuda()
     logger.info(f"loaded model on {cfg.device}")
 
-    dataset = ImageFolder720p(cfg.dataset_path)
     dataloader = DataLoader(
-        dataset,
+        dataset=ImageFolder720p(cfg.dataset_path),
         batch_size=cfg.batch_size,
         shuffle=cfg.shuffle,
         num_workers=cfg.num_workers,
     )
-    logger.info("loaded dataset")
+    logger.info(f"loaded dataset from {cfg.dataset_path}")
 
     optimizer = optim.Adam(model.parameters(), lr=cfg.learning_rate, weight_decay=1e-5)
     loss_criterion = nn.MSELoss()
@@ -89,10 +88,10 @@ def train(cfg: Namespace) -> None:
             epoch_avg += avg_loss_per_image
 
             if batch_idx % cfg.batch_every == 0:
-                writer.add_scalar("train/avg_loss", avg_loss / cfg.batch_every, ts)
+                tb_writer.add_scalar("train/avg_loss", avg_loss / cfg.batch_every, ts)
 
                 for name, param in model.named_parameters():
-                    writer.add_histogram(name, param, ts)
+                    tb_writer.add_histogram(name, param, ts)
 
                 logger.debug(
                     "[%3d/%3d][%5d/%5d] avg_loss: %.8f"
@@ -132,7 +131,7 @@ def train(cfg: Namespace) -> None:
         if epoch_idx % cfg.epoch_every == 0:
             epoch_avg /= len(dataloader) * cfg.epoch_every
 
-            writer.add_scalar(
+            tb_writer.add_scalar(
                 "train/epoch_avg_loss",
                 avg_loss / cfg.batch_every,
                 epoch_idx // cfg.epoch_every,
@@ -149,7 +148,7 @@ def train(cfg: Namespace) -> None:
     T.save(model.state_dict(), exp_dir / "model_final.pth")
 
     # cleaning
-    writer.close()
+    tb_writer.close()
 
 
 if __name__ == "__main__":

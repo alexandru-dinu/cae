@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-import numpy as np
 
 
 # will see 3x128x128 patches
