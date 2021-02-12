@@ -1,5 +1,7 @@
 ## Lossy Image Compression with Compressive Autoencoders
 
+[![Discussions](https://img.shields.io/badge/discussions-welcome-brightgreen)](https://github.com/alexandru-dinu/cae/discussions)
+[![Wiki](https://img.shields.io/badge/docs-wiki-white)](https://github.com/alexandru-dinu/cae/wiki)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 ## Getting started
