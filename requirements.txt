@@ -1,4 +1,3 @@
-bagoftools
 numpy
 Pillow
 PyYAML

@@ -11,8 +11,8 @@ from torch.utils.data import DataLoader
 from data_loader import ImageFolder720p
 from utils import save_imgs
 
-from bagoftools.namespace import Namespace
-from bagoftools.logger import Logger
+from namespace import Namespace
+from logger import Logger
 
 from models.cae_32x32x32_zero_pad_bin import CAE
 
