@@ -1,22 +1,20 @@
-import os
-import yaml
 import argparse
+import os
 from pathlib import Path
 
 import numpy as np
 import torch as T
 import torch.nn as nn
 import torch.optim as optim
+import yaml
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
+from cae import CAE
 from data_loader import ImageFolder720p
-from utils import save_imgs
-
-from namespace import Namespace
 from logger import Logger
-
-from models.cae_32x32x32_zero_pad_bin import CAE
+from namespace import Namespace
+from utils import save_imgs
 
 logger = Logger(__name__, colorize=True)
 
@@ -122,7 +120,7 @@ def train(cfg: Namespace) -> None:
                 save_imgs(
                     imgs=y,
                     to_size=(3, 768, 2 * 1280),
-                    name=exp_dir / f"out/{epoch_idx}_{batch_idx}.png",
+                    path=exp_dir / f"out/{epoch_idx}_{batch_idx}.png",
                 )
             # -- end save every
         # -- end batches

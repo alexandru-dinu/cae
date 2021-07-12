@@ -27,6 +27,7 @@ class ImageFolder720p(Dataset):
         img = np.transpose(img, (2, 0, 1))
         img = T.from_numpy(img).float()
 
+        # channels x 6 x 10 x 128 x 128 (6x10 128x128 patches)
         patches = np.reshape(img, (3, 6, 128, 10, 128))
         patches = np.transpose(patches, (0, 1, 3, 2, 4))
 
