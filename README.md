@@ -1,16 +1,18 @@
-# Compressive Autoencoder
+# Compressive AutoEncoder
 
 [![Discussions](https://img.shields.io/badge/discussions-welcome-brightgreen)](https://github.com/alexandru-dinu/cae/discussions)
 [![Wiki](https://img.shields.io/badge/docs-wiki-white)](https://github.com/alexandru-dinu/cae/wiki)
+[![HF](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Model-blue)](https://huggingface.co/alexandru-dinu/cae)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 ## Getting started
 
-The quickest way to start experimenting is to use [this model](https://drive.google.com/open?id=1SSek44svPAZClmOg8xX-DLDUxQdnK22A) trained on [this smaller dataset](https://drive.google.com/open?id=1wbwkpz38stSFMwgEKhoDCQCMiLLFVC4T). An arbitrary dataset can be constructed by downloading frames using the scripts provided [here](https://github.com/gsssrao/youtube-8m-videos-frames).
+> [!TIP]
+> The quickest way to start experimenting is to use [this model](https://huggingface.co/alexandru-dinu/cae/blob/main/model_yt_small_final.state) trained on [this smaller dataset](https://huggingface.co/alexandru-dinu/cae/blob/main/yt_small_720p.zip). An arbitrary dataset can be constructed by downloading frames using the scripts provided [here](https://github.com/gsssrao/youtube-8m-videos-frames).
+>
+> See [wiki](https://github.com/alexandru-dinu/cae/wiki) for more details, download links and further results.
 
-See [wiki](https://github.com/alexandru-dinu/cae/wiki) for more details, download links and further results.
-
-### Training
+## Training
 ```bash
 python train.py --config ../configs/train.yaml
 ```
@@ -37,7 +39,7 @@ num_workers: 2
 device: cuda
 ```
 
-### Testing
+## Testing
 Given a trained model (`checkpoint`), perform inference on images @ `dataset_path`.
 
 ```bash
